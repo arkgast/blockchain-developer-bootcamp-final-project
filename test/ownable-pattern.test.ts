@@ -18,7 +18,7 @@ describe("Ownable", function () {
     expect(contractOwner).to.equal(newOwner.address);
   });
 
-  it("should trigger an error when ownership tries to change by another user", async () => {
+  it("should throw when ownership tries to change by another user", async () => {
     const Contract = await ethers.getContractFactory("Ownable");
     const contractInstance = await Contract.deploy();
     await contractInstance.deployed();
