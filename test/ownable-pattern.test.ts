@@ -1,32 +1,31 @@
-import chai from "chai";
+import { expect } from "chai";
 import { ethers } from "hardhat";
-import { solidity } from "ethereum-waffle";
-
-chai.use(solidity);
-const { expect } = chai;
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Ownable__factory, Ownable } from "../typechain";
 
 describe("Ownable", function () {
-  it("should change ownership by owner", async () => {
-    const Contract = await ethers.getContractFactory("Ownable");
-    const contractInstance = await Contract.deploy();
+  let Contract: Ownable__factory;
+  let contractInstance: Ownable;
+  let owner: SignerWithAddress;
+  let addr1: SignerWithAddress;
+
+  beforeEach(async () => {
+    Contract = await ethers.getContractFactory("CircuitBreaker");
+    contractInstance = await Contract.deploy();
     await contractInstance.deployed();
 
-    const [owner, newOwner] = await ethers.getSigners();
-    await contractInstance.connect(owner).changeOwner(newOwner.address);
+    [owner, addr1] = await ethers.getSigners();
+  });
+
+  it("should change ownership by owner", async () => {
+    await contractInstance.connect(owner).changeOwner(addr1.address);
 
     const contractOwner = await contractInstance.owner();
-    expect(contractOwner).to.equal(newOwner.address);
+    expect(contractOwner).to.equal(addr1.address);
   });
 
   it("should throw when ownership tries to change by another user", async () => {
-    const Contract = await ethers.getContractFactory("Ownable");
-    const contractInstance = await Contract.deploy();
-    await contractInstance.deployed();
-
-    const [, newOwner] = await ethers.getSigners();
-
-    await expect(
-      contractInstance.connect(newOwner).changeOwner(newOwner.address)
-    ).to.be.reverted;
+    await expect(contractInstance.connect(addr1).changeOwner(addr1.address)).to
+      .be.reverted;
   });
 });
