@@ -25,6 +25,7 @@ npx hardhat verify --network <network-name> <deployet-contract-address>
 # To do list
 
 - [x] Initial design of the project
+- [ ] General improvements and refactor
 - [ ] Improve design and to do list
 
 ## Contract
@@ -43,12 +44,12 @@ npx hardhat verify --network <network-name> <deployet-contract-address>
 
 ## Frontend
 
-- [ ] Connect wallet
-- [ ] Use active wallet
-- [ ] Buy lottery ticket
+- [x] Connect wallet
+- [x] Use active wallet
+- [x] Buy lottery ticket
 - [ ] Display lottery ticket
-- [ ] Receive notification when lottery event completes
-- [ ] Show lottery winner
+- [x] Receive notification when lottery event completes
+- [x] Show lottery winner
 - [ ] List users who bought a ticket
 - [ ] List previous winers
 
