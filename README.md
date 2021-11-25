@@ -29,15 +29,16 @@ npx hardhat verify --network <network-name> <deployet-contract-address>
 
 ## Contract
 
-- [ ] Create tests
-- [ ] Apply circuit breaker pattern
-- [ ] Apply ownable design pattern 
+- [x] Create tests
+- [x] Apply circuit breaker pattern
+- [x] Apply ownable design pattern 
 - [ ] Generate random ticket number (Use chainlink RVF)
-- [ ] Allow users to buy a ticket
-- [ ] Emmit event when a ticket is bought
+- [x] Allow users to buy a ticket
+- [x] Emmit event when a ticket is bought
 - [ ] Select random winner
-- [ ] Emit event when a winner is selected
-- [ ] Return list of all participants
+- [x] Emit event when a winner is selected
+- [x] Return list of all participants
+- [x] Return list of all winners
 - [ ] Improve security with Open Zeppelin Contracts
 
 ## Frontend
