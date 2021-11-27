@@ -6,23 +6,44 @@ import "./CircuitBreaker.sol";
 import "./Ownable.sol";
 
 contract Winlo is Ownable, CircuitBreaker {
+  uint256 FEE_COST = 0.001 ether;
+
   address payable[] public players;
   address[] public winners;
   address public lastWinner;
 
   event NewPlayer(address);
-  event Winner(address);
+  event Refund(address, uint256);
+  event Winner(address, uint256);
 
-  function buyTicket() external whenNotPaused {
+  modifier costToEnter() {
+    require(msg.value >= FEE_COST, "You should sent 0.001 eth");
+
+    if (msg.value > FEE_COST) {
+      uint256 amountToRefund = msg.value - FEE_COST;
+      (bool success, ) = payable(msg.sender).call{ value: amountToRefund }("");
+      require(success, "Refund failed");
+      emit Refund(msg.sender, amountToRefund);
+    }
+
+    _;
+  }
+
+  function buyTicket() external payable whenNotPaused costToEnter {
     players.push(payable(msg.sender));
     emit NewPlayer(msg.sender);
   }
 
   function selectWinner() external onlyOwner whenNotPaused {
     address winner = players[0];
+    uint256 prize = address(this).balance;
+
     lastWinner = winner;
     winners.push(winner);
-    emit Winner(winner);
+
+    (bool success, ) = payable(winner).call{ value: prize }("");
+    require(success, "Adwarding failed");
+    emit Winner(winner, prize);
   }
 
   function getPlayers() external view returns(address payable[] memory) {
