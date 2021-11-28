@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity 0.8.9;
 
 import "hardhat/console.sol";
 import "./CircuitBreaker.sol";
 import "./Ownable.sol";
 
 contract Winlo is Ownable, CircuitBreaker {
-  uint256 FEE_COST = 0.001 ether;
+  uint256 private FEE_COST = 0.001 ether;
 
   address payable[] public players;
   address[] public winners;
