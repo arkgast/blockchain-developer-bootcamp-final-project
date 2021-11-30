@@ -1,13 +1,17 @@
 import React from 'react';
+import { strict as assert } from 'assert';
 import Container from '@mui/material/Container'
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
-import { useContract, useAccount } from './shared/hooks'
+
+import WinnersList from './components/WinnersList';
+import PlayersList from './components/PlayersList'
+import { useContract, useContractOwner, useAccount } from './shared/hooks'
 
 function App() {
   const contract = useContract();
-
+  const contractOwner = useContractOwner();
   const [account, connectAccount] = useAccount();
 
   const buyTicketAction = async () => {
@@ -16,8 +20,8 @@ function App() {
   }
 
   const selectWinnerAction = async () => {
+    assert(account === contractOwner, "Not authorized");
     const tx = await contract?.selectWinner();
-    console.log(tx);
 
     contract?.on("Winner", (data) => {
       console.log(data);
@@ -42,6 +46,10 @@ function App() {
           </Button>
         </Stack>
       )}
+
+      <WinnersList />
+
+      <PlayersList />
     </Container>
   )
 }

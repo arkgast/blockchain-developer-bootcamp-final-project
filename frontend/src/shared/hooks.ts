@@ -56,4 +56,22 @@ const useAccount = (): [string, Function] => {
   return [account, connectAccount];
 };
 
-export { useContract, useAccount };
+const useContractOwner = () => {
+  const [owner, setOwner] = useState("");
+  const contract = useContract();
+
+  const getContractOwner = async () => {
+    if (!window.ethereum) {
+      const owner = await contract?.owner();
+      setOwner(owner);
+    }
+  };
+
+  useEffect(() => {
+    getContractOwner();
+  }, []);
+
+  return owner;
+};
+
+export { useContract, useContractOwner, useAccount };
