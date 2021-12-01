@@ -2,18 +2,15 @@
 
 DApp created for users to play lottery.
 
-# How to use
+## How to use
 
-## Install dependencies
+### Install dependencies
 
     $ npm install
-    $ cd frontend && npm install
-
-## Contracts interaction
 
 ### Compile contracts
 
-    $ npm run compile
+    $ npm run
 
 ### Run unit tests
 
@@ -24,6 +21,16 @@ DApp created for users to play lottery.
     $ npm run test:e2e
 
 > To run this tests successfully you need to have LINK
+
+## Metamask address `0xe24376969016f0C32792e12413b824C2a0BC2dfe`
+
+## Url of deployed site
+
+https://winlo-kk7azv868-arkgast.vercel.app/
+
+## Project screencast
+
+https://drive.google.com/drive/folders/1UPdk3uSQca_kpT_60OGrQqLSWTBWb83S?usp=sharing
 
 ## Project structure
 
@@ -75,13 +82,13 @@ DApp created for users to play lottery.
 - [x] Create tests
 - [x] Apply circuit breaker pattern
 - [x] Apply ownable design pattern 
-- [ ] Generate random ticket number (Use chainlink RVF)
 - [x] Allow users to buy a ticket
 - [x] Emmit event when a ticket is bought
-- [ ] Select random winner
+- [x] Select random winner
 - [x] Emit event when a winner is selected
 - [x] Return list of all participants
 - [x] Return list of all winners
+- [ ] Improve security with Open Zeppelin Contracts
 - [ ] Improve security with Open Zeppelin Contracts
 
 ### Frontend
@@ -95,4 +102,4 @@ DApp created for users to play lottery.
 - [x] List previous winers
 
 ### Utils
-- [  ] Create script to save contract abi and address into the proper files once it is deployed
+- [ ] Create script to save contract abi and address into the proper files once it is deployed
