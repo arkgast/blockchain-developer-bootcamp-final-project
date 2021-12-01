@@ -26,11 +26,11 @@ DApp created for users to play lottery.
 
 ## Url of deployed site
 
-https://winlo-kk7azv868-arkgast.vercel.app/
+https://winlo-2a429rme6-arkgast.vercel.app/
 
 ## Project screencast
 
-https://drive.google.com/drive/folders/1UPdk3uSQca_kpT_60OGrQqLSWTBWb83S?usp=sharing
+https://drive.google.com/file/d/1khHWJdOfOROZXQuELpMZwBkMBbzm4iWu/view?usp=sharing
 
 ## Project structure
 
