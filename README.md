@@ -10,7 +10,7 @@ DApp created for users to play lottery.
 
 ### Compile contracts
 
-    $ npm run
+    $ npm run compile
 
 ### Run unit tests
 
