@@ -3,6 +3,11 @@ pragma solidity 0.8.9;
 
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
+/**
+* @title Random Number Generator
+* @notice Oracle random number generator.
+* @dev Sole implementation of the contract to test its functionality.
+*/
 contract RandomNumberConsumer is VRFConsumerBase {
   bytes32 internal keyHash;
   uint256 internal fee;
