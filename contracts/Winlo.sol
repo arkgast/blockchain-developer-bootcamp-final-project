@@ -35,15 +35,21 @@ contract Winlo is Ownable, CircuitBreaker {
   }
 
   function selectWinner() external onlyOwner whenNotPaused {
-    address winner = players[0];
+    address winner = players[random()];
     uint256 prize = address(this).balance;
 
     lastWinner = winner;
     winners.push(winner);
+    delete players;
 
     (bool success, ) = payable(winner).call{ value: prize }("");
     require(success, "Adwarding failed");
     emit Winner(winner, prize);
+  }
+
+  function random() private view returns (uint256) {
+    uint256 ran = uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, players)));
+    return ran % players.length;
   }
 
   function getPlayers() external view returns(address payable[] memory) {

@@ -56,8 +56,10 @@ describe("Winlo", function () {
       .withArgs(addr1.address, FIXED_TICKET_COST);
 
     const winners = await contractInstance.getWinners();
-
     expect(winners).to.contain(addr1.address);
+
+    const players = await contractInstance.getPlayers();
+    expect(players.length).to.equal(0);
   });
 
   it("should allow to select winner only by owner", async () => {
