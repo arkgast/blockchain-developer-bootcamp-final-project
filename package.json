@@ -4,6 +4,7 @@
   "description": "Lottery Dapp",
   "main": "index.js",
   "scripts": {
+    "compile": "hardhat compile",
     "test": "hardhat test test/*\\.test\\.*",
     "test:e2e": "hardhat test test/*\\.e2e-test\\.* --network rinkeby",
     "deploy": "hardhat run scripts/deploy.ts --network rinkeby"

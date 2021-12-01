@@ -1,21 +1,12 @@
 # Winlo Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React project to interact with Winlo smart contracts.
 
-## Available Scripts
+## Commands
 
-In the project directory, you can run:
+### To install dependencies `npm install`
 
-### `npm start`
+### To run the project `npm start`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-### `npm test`
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.
