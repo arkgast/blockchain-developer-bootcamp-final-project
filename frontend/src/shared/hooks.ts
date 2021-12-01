@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS } from "./constants";
+import { CONTRACT_ADDRESS, EMPTY_ADDRESS } from "./constants";
 import Winlo from "../utils/Winlo.json";
+
+const getProvider = () => {
+  if (!window.ethereum) {
+    console.error("Make sure you have Metamask installed.");
+    return;
+  }
+
+  return new ethers.providers.Web3Provider(window.ethereum);
+};
 
 const useContract = () => {
   const [contract, setContract] = useState<ethers.Contract | null>(null);
-  useEffect(() => {
-    const { ethereum } = window;
-    if (!ethereum) {
-      console.error("Make sure you have Metamask installed.");
-      return;
-    }
+  const provider = getProvider();
 
-    const provider = new ethers.providers.Web3Provider(ethereum);
-    const signer = provider.getSigner();
+  useEffect(() => {
+    const signer = provider?.getSigner();
     const contract = new ethers.Contract(
       CONTRACT_ADDRESS ? CONTRACT_ADDRESS : "",
       Winlo.abi,
@@ -21,6 +25,7 @@ const useContract = () => {
     );
 
     setContract(contract);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return contract;
@@ -36,7 +41,7 @@ const useAccount = (): [string, Function] => {
     });
 
     if (!currentAccount) return;
-    setAccount(currentAccount);
+    setAccount(currentAccount.toUpperCase());
   };
 
   const connectAccount = async () => {
@@ -45,8 +50,8 @@ const useAccount = (): [string, Function] => {
       method: "eth_requestAccounts",
     });
 
-    if (!account) return;
-    setAccount(currentAccount);
+    if (!currentAccount) return;
+    setAccount(currentAccount.toUpperCase());
   };
 
   useEffect(() => {
@@ -58,20 +63,108 @@ const useAccount = (): [string, Function] => {
 
 const useContractOwner = () => {
   const [owner, setOwner] = useState("");
+  const [account] = useAccount();
   const contract = useContract();
 
   const getContractOwner = async () => {
-    if (!window.ethereum) {
-      const owner = await contract?.owner();
-      setOwner(owner);
+    if (contract) {
+      const owner = await contract.owner();
+      setOwner(owner.toUpperCase());
     }
   };
 
   useEffect(() => {
     getContractOwner();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
 
   return owner;
 };
 
-export { useContract, useContractOwner, useAccount };
+const usePlayers = (): [Array<string>, Function] => {
+  const contract = useContract();
+  const [account] = useAccount();
+  const [playersList, setPlayersList] = useState([]);
+
+  const getPlayers = async () => {
+    const players = await contract?.getPlayers();
+    setPlayersList(players || []);
+  };
+
+  useEffect(() => {
+    getPlayers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
+
+  return [playersList, setPlayersList];
+};
+
+const useWinners = (): [Array<string>, Function] => {
+  const contract = useContract();
+  const [account] = useAccount();
+  const [winnersList, setWinnersList] = useState([]);
+
+  const getWinners = async () => {
+    const winners = await contract?.getWinners();
+    setWinnersList(winners || []);
+  };
+
+  useEffect(() => {
+    getWinners();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
+
+  return [winnersList, setWinnersList];
+};
+
+const useLastWinner = (): [string, Function] => {
+  const contract = useContract();
+  const [account] = useAccount();
+  const [lastWinner, setLastWinner] = useState("");
+
+  const getLastWinner = async () => {
+    const lastWinner = await contract?.lastWinner();
+    if (!lastWinner || lastWinner === EMPTY_ADDRESS) return;
+    setLastWinner(lastWinner);
+  };
+
+  useEffect(() => {
+    getLastWinner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
+
+  return [lastWinner, setLastWinner];
+};
+
+const usePrize = (): [string, Function] => {
+  const [prize, setPrize] = useState("");
+  const [account] = useAccount();
+  const contract = useContract();
+  const provider = getProvider();
+
+  const getCurrentPrize = async () => {
+    if (provider && contract) {
+      const contractBalance = await provider.getBalance(contract.address);
+      if (contractBalance) {
+        setPrize(ethers.utils.formatEther(contractBalance));
+      }
+    }
+  };
+
+  useEffect(() => {
+    getCurrentPrize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
+
+  return [prize, getCurrentPrize];
+};
+
+export {
+  useAccount,
+  useContract,
+  useContractOwner,
+  useLastWinner,
+  usePlayers,
+  usePrize,
+  useWinners,
+};

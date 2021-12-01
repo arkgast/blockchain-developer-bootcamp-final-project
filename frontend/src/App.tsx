@@ -1,55 +1,117 @@
 import React from 'react';
 import { strict as assert } from 'assert';
-import Container from '@mui/material/Container'
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button'
-import Stack from '@mui/material/Stack'
+import { ethers } from 'ethers';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Grid';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
-import WinnersList from './components/WinnersList';
-import PlayersList from './components/PlayersList'
-import { useContract, useContractOwner, useAccount } from './shared/hooks'
+import List from './components/List'
+import {
+  useAccount,
+  useContract,
+  useContractOwner,
+  useLastWinner,
+  usePrize,
+  usePlayers,
+  useWinners
+} from './shared/hooks'
+
 
 function App() {
   const contract = useContract();
   const contractOwner = useContractOwner();
+  const [prize, getCurrentPrize] = usePrize();
+  const [lastWinner, setLastWinner] = useLastWinner();
   const [account, connectAccount] = useAccount();
+  const [playersList, setPlayersList] = usePlayers();
+  const [winnersList, setWinnersList] = useWinners();
 
   const buyTicketAction = async () => {
-    const tx = await contract?.buyTicket();
-    console.log(tx);
+    const ticketPrice = ethers.utils.parseEther("0.001");
+    await contract?.buyTicket({ value: ticketPrice });
+
+    contract?.on("NewPlayer", (newPlayerAddress: string) => {
+      setPlayersList([...playersList, newPlayerAddress]);
+      getCurrentPrize();
+    })
   }
 
   const selectWinnerAction = async () => {
     assert(account === contractOwner, "Not authorized");
-    const tx = await contract?.selectWinner();
+    await contract?.selectWinner();
 
-    contract?.on("Winner", (data) => {
-      console.log(data);
+    contract?.on("Winner", (winnerAddress: string) => {
+      setLastWinner(winnerAddress);
+      setWinnersList([...winnersList, winnerAddress]);
+      getCurrentPrize();
     });
   }
 
   return (
-    <Container maxWidth="sm" sx={{ textAlign: "center" }}>
-      <h1>Winlo</h1>
-      {!account &&  (
-        <Button variant="outlined" color="secondary" onClick={() => connectAccount()}>
-          Connect Metamask
-        </Button>
-      )}
-      {account && (
-        <Stack spacing={2} direction="row" justifyContent="center">
-          <Button variant="contained" color="success" onClick={buyTicketAction}>
-            Buy Ticket
-          </Button>
-          <Button variant="contained" color="secondary" onClick={selectWinnerAction}>
-            Select Winner
-          </Button>
-        </Stack>
-      )}
+    <Container sx={{ textAlign: "center" }}>
+      <Grid container spacing={4} columns={12} sx={{ justifyContent: "center" }}>
+        <Grid item xs={6} sx={{ textAlign: "left" }}>
+          {lastWinner ?
+            (<Typography variant="overline">{lastWinner}</Typography>)
+            : (<Typography variant="overline">There is not winner yet!</Typography>)
+          }
+        </Grid>
 
-      <WinnersList />
+        <Grid item xs={6} sx={{ textAlign: "right" }}>
+          {account ?
+            (<Typography variant="overline">{account}</Typography>)
+            : (<Typography variant="overline">No address to display</Typography>)
+          }
+        </Grid>
 
-      <PlayersList />
+        <Grid item xs={12} md={12}>
+          <Typography variant="h1" gutterBottom>Winlo - Lottery</Typography>
+
+          {!account &&  (
+            <Button
+              color="secondary"
+              variant="outlined"
+              size="large"
+              onClick={() => connectAccount()}
+            >
+              Connect Metamask
+            </Button>
+          )}
+
+          {account && (
+            <Stack spacing={2} direction="row" justifyContent="center">
+              <Button
+                color="success"
+                variant="contained"
+                size="large"
+                onClick={buyTicketAction}
+              >
+                Buy Ticket - Ticket price 0.001 eth
+              </Button>
+
+              {account === contractOwner && (
+                <Button variant="contained" color="secondary" onClick={selectWinnerAction}>
+                  Select Winner
+                </Button>
+              )}
+            </Stack>
+          )}
+        </Grid>
+
+        <Grid item xs={8}>
+          <Typography variant="h4" gutterBottom>Current prize is {prize} eth</Typography>
+        </Grid>
+
+        <Grid item xs={6} md={5}>
+          <List list={playersList} title="Players" />
+        </Grid>
+
+        <Grid item xs={6} md={5}>
+          <List list={winnersList} title="Winners" />
+        </Grid>
+      </Grid>
     </Container>
   )
 }
