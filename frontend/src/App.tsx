@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
 import Button from '@mui/material/Button';
@@ -28,11 +28,16 @@ function App() {
   const [playersList, setPlayersList] = usePlayers();
   const [winnersList, setWinnersList] = useWinners();
 
+  const [buyingTicket, setBuyingTicket] = useState(false);
+  const [selectingWinner, setSelectingWinner] = useState(false);
+
   const buyTicketAction = async () => {
     const ticketPrice = ethers.utils.parseEther("0.001");
     await contract?.buyTicket({ value: ticketPrice });
+    setBuyingTicket(true);
 
     contract?.on("NewPlayer", (newPlayerAddress: string) => {
+      setBuyingTicket(false);
       setPlayersList([...playersList, newPlayerAddress]);
       getCurrentPrize();
     })
@@ -41,10 +46,13 @@ function App() {
   const selectWinnerAction = async () => {
     assert(account === contractOwner, "Not authorized");
     await contract?.selectWinner();
+    setSelectingWinner(true);
 
     contract?.on("Winner", (winnerAddress: string) => {
+      setSelectingWinner(false);
       setLastWinner(winnerAddress);
       setWinnersList([...winnersList, winnerAddress]);
+      setPlayersList([]);
       getCurrentPrize();
     });
   }
@@ -86,13 +94,20 @@ function App() {
                 color="success"
                 variant="contained"
                 size="large"
+                disabled={buyingTicket}
                 onClick={buyTicketAction}
               >
                 Buy Ticket - Ticket price 0.001 eth
               </Button>
 
               {account === contractOwner && (
-                <Button variant="contained" color="secondary" onClick={selectWinnerAction}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="large"
+                  disabled={selectingWinner}
+                  onClick={selectWinnerAction}
+                >
                   Select Winner
                 </Button>
               )}
@@ -101,15 +116,21 @@ function App() {
         </Grid>
 
         <Grid item xs={8}>
-          <Typography variant="h4" gutterBottom>Current prize is {prize} eth</Typography>
+          <Typography
+            variant="h4"
+            gutterBottom
+            color={buyingTicket? "#78909c" : selectingWinner ? "#bcaaa4" : "#00b0ff"}
+          >
+            Current prize is {prize} eth
+          </Typography>
         </Grid>
 
         <Grid item xs={6} md={5}>
-          <List list={playersList} title="Players" />
+          <List list={playersList} title="Players" loading={buyingTicket} />
         </Grid>
 
         <Grid item xs={6} md={5}>
-          <List list={winnersList} title="Winners" />
+          <List list={winnersList} title="Winners" loading={selectingWinner} />
         </Grid>
       </Grid>
     </Container>
