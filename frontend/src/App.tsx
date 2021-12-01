@@ -62,14 +62,14 @@ function App() {
       <Grid container spacing={4} columns={12} sx={{ justifyContent: "center" }}>
         <Grid item xs={6} sx={{ textAlign: "left" }}>
           {lastWinner ?
-            (<Typography variant="overline">{lastWinner}</Typography>)
+            (<Typography variant="overline">Last winner: {lastWinner}</Typography>)
             : (<Typography variant="overline">There is not winner yet!</Typography>)
           }
         </Grid>
 
         <Grid item xs={6} sx={{ textAlign: "right" }}>
           {account ?
-            (<Typography variant="overline">{account}</Typography>)
+            (<Typography variant="overline">Current address: {account}</Typography>)
             : (<Typography variant="overline">No address to display</Typography>)
           }
         </Grid>
@@ -126,11 +126,11 @@ function App() {
         </Grid>
 
         <Grid item xs={6} md={5}>
-          <List list={playersList} title="Players" loading={buyingTicket} />
+          <List list={playersList} title="Current Players" loading={buyingTicket} />
         </Grid>
 
         <Grid item xs={6} md={5}>
-          <List list={winnersList} title="Winners" loading={selectingWinner} />
+          <List list={winnersList} title="Previous Winners" loading={selectingWinner} />
         </Grid>
       </Grid>
     </Container>

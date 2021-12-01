@@ -52,6 +52,7 @@ const useAccount = (): [string, Function] => {
 
     if (!currentAccount) return;
     setAccount(currentAccount.toUpperCase());
+    window.location.reload();
   };
 
   useEffect(() => {
