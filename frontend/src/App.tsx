@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Grid';
 import Grid from '@mui/material/Grid';
@@ -27,7 +28,7 @@ const checkIfAccountIsConnected = async (setAccount: Function) => {
   setAccount(currentAccount.toUpperCase());
 };
 
-function App() {
+function App () {
   const contract = useContract();
   const contractOwner = useContractOwner();
   const [prize, getCurrentPrize] = usePrize();
@@ -38,6 +39,7 @@ function App() {
 
   const [buyingTicket, setBuyingTicket] = useState(false);
   const [selectingWinner, setSelectingWinner] = useState(false);
+  const [winner, setWinner] = useState("");
 
   checkIfAccountIsConnected(setAccount)
 
@@ -61,6 +63,7 @@ function App() {
     contract.on("Winner", (winnerAddress: string) => {
       setSelectingWinner(false);
       setLastWinner(winnerAddress);
+      setWinner(winnerAddress);
       setWinnersList([...winnersList, winnerAddress]);
       setPlayersList([]);
       getCurrentPrize();
@@ -134,6 +137,25 @@ function App() {
             Current prize is {prize} eth
           </Typography>
         </Grid>
+
+        {winner && (
+          <Grid item xs={8}>
+            <Alert
+              severity={winner === lastWinner ? "success" : "info"}
+              onClose={() => { setWinner("") }}
+            >
+              {winner === lastWinner ? (
+                <>
+                  Congratulations, You won!
+                </>
+              ) : (
+                <>
+                  Lottery winner is: {winner}
+                </>
+              )}
+            </Alert>
+          </Grid>
+        )}
 
         <Grid item xs={6} md={5}>
           <List list={playersList} title="Current Players" loading={buyingTicket} />

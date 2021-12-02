@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS } from "./constants";
 import Winlo from "../utils/Winlo.json";
@@ -21,11 +21,16 @@ const useContract = () => {
 };
 
 const useContractOwner = () => {
+  const [contractOwner, setContractOwner] = useState("");
   const contract = useContract();
 
-  return useMemo(() => {
-    return contract.owner();
+  useMemo(() => {
+    contract?.owner().then((owner: string) => {
+      setContractOwner(owner.toUpperCase());
+    });
   }, [contract]);
+
+  return contractOwner;
 };
 
 export { useContract, useContractOwner };
