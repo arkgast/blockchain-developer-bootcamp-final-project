@@ -18,25 +18,35 @@ import {
   useWinners
 } from './shared/hooks'
 
+const checkIfAccountIsConnected = async (setAccount: Function) => {
+  const [currentAccount] = await window.ethereum.request({
+    method: "eth_accounts",
+  });
+
+  if (!currentAccount) return;
+  setAccount(currentAccount.toUpperCase());
+};
 
 function App() {
   const contract = useContract();
   const contractOwner = useContractOwner();
   const [prize, getCurrentPrize] = usePrize();
   const [lastWinner, setLastWinner] = useLastWinner();
-  const [account, connectAccount] = useAccount();
+  const [account, setAccount, connectAccount] = useAccount();
   const [playersList, setPlayersList] = usePlayers();
   const [winnersList, setWinnersList] = useWinners();
 
   const [buyingTicket, setBuyingTicket] = useState(false);
   const [selectingWinner, setSelectingWinner] = useState(false);
 
+  checkIfAccountIsConnected(setAccount)
+
   const buyTicketAction = async () => {
     const ticketPrice = ethers.utils.parseEther("0.001");
-    await contract?.buyTicket({ value: ticketPrice });
+    await contract.buyTicket({ value: ticketPrice });
     setBuyingTicket(true);
 
-    contract?.on("NewPlayer", (newPlayerAddress: string) => {
+    contract.on("NewPlayer", (newPlayerAddress: string) => {
       setBuyingTicket(false);
       setPlayersList([...playersList, newPlayerAddress]);
       getCurrentPrize();
@@ -45,10 +55,10 @@ function App() {
 
   const selectWinnerAction = async () => {
     assert(account === contractOwner, "Not authorized");
-    await contract?.selectWinner();
+    await contract.selectWinner();
     setSelectingWinner(true);
 
-    contract?.on("Winner", (winnerAddress: string) => {
+    contract.on("Winner", (winnerAddress: string) => {
       setSelectingWinner(false);
       setLastWinner(winnerAddress);
       setWinnersList([...winnersList, winnerAddress]);

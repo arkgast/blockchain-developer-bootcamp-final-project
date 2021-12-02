@@ -1,86 +1,10 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, EMPTY_ADDRESS } from "./constants";
-import Winlo from "../utils/Winlo.json";
+import { EMPTY_ADDRESS } from "./constants";
 
-const getProvider = () => {
-  if (!window.ethereum) {
-    console.error("Make sure you have Metamask installed.");
-    return;
-  }
-
-  return new ethers.providers.Web3Provider(window.ethereum);
-};
-
-const useContract = () => {
-  const [contract, setContract] = useState<ethers.Contract | null>(null);
-  const provider = getProvider();
-
-  useEffect(() => {
-    const signer = provider?.getSigner();
-    const contract = new ethers.Contract(
-      CONTRACT_ADDRESS ? CONTRACT_ADDRESS : "",
-      Winlo.abi,
-      signer
-    );
-
-    setContract(contract);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return contract;
-};
-
-const useAccount = (): [string, Function] => {
-  const [account, setAccount] = useState("");
-
-  const accountIsConnected = async () => {
-    if (!window.ethereum) return;
-    const [currentAccount] = await window.ethereum.request({
-      method: "eth_accounts",
-    });
-
-    if (!currentAccount) return;
-    setAccount(currentAccount.toUpperCase());
-  };
-
-  const connectAccount = async () => {
-    if (!window.ethereum) return;
-    const [currentAccount] = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-
-    if (!currentAccount) return;
-    setAccount(currentAccount.toUpperCase());
-    window.location.reload();
-  };
-
-  useEffect(() => {
-    accountIsConnected();
-  }, []);
-
-  return [account, connectAccount];
-};
-
-const useContractOwner = () => {
-  const [owner, setOwner] = useState("");
-  const [account] = useAccount();
-  const contract = useContract();
-
-  const getContractOwner = async () => {
-    if (contract) {
-      const owner = await contract.owner();
-      setOwner(owner.toUpperCase());
-    }
-  };
-
-  useEffect(() => {
-    getContractOwner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account]);
-
-  return owner;
-};
+import { useAccount } from "./account";
+import { useContract, useContractOwner } from "./contract";
+import { useProvider } from "./provider";
 
 const usePlayers = (): [Array<string>, Function] => {
   const contract = useContract();
@@ -141,7 +65,7 @@ const usePrize = (): [string, Function] => {
   const [prize, setPrize] = useState("");
   const [account] = useAccount();
   const contract = useContract();
-  const provider = getProvider();
+  const provider = useProvider();
 
   const getCurrentPrize = async () => {
     if (provider && contract) {
