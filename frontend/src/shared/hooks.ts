@@ -62,7 +62,7 @@ const useLastWinner = (): [string, Function] => {
 };
 
 const usePrize = (): [string, Function] => {
-  const [prize, setPrize] = useState("");
+  const [prize, setPrize] = useState("0.0");
   const [account] = useAccount();
   const contract = useContract();
   const provider = useProvider();
