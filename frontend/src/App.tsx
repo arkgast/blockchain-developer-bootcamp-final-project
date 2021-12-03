@@ -144,7 +144,7 @@ function App () {
               severity={winner === lastWinner ? "success" : "info"}
               onClose={() => { setWinner("") }}
             >
-              {winner === lastWinner ? (
+              {winner === account ? (
                 <>
                   Congratulations, You won!
                 </>

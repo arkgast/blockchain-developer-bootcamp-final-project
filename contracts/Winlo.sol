@@ -38,22 +38,26 @@ contract Winlo is Ownable, CircuitBreaker {
 
   modifier costToEnter() {
     require(msg.value >= FEE_COST, "You should sent 0.001 eth");
-
-    if (msg.value > FEE_COST) {
-      uint256 amountToRefund = msg.value - FEE_COST;
-      (bool success, ) = payable(msg.sender).call{ value: amountToRefund }("");
-      require(success, "Refund failed");
-      emit Refund(msg.sender, amountToRefund);
-    }
-
     _;
   }
 
   /// @notice Adds a player to the list of players.
   /// @dev Checks the amount is correct and that it is on a valid state.
   function buyTicket() external payable whenNotPaused costToEnter {
+    refund();
     players.push(payable(msg.sender));
     emit NewPlayer(msg.sender);
+  }
+
+  /// @notice Refund user in case it sends more than it was required.
+  function refund() private {
+    if (msg.value > FEE_COST) {
+      uint256 amountToRefund = msg.value - FEE_COST;
+      (bool success, ) = payable(msg.sender).call{ value: amountToRefund }("");
+
+      require(success, "Refund failed");
+      emit Refund(msg.sender, amountToRefund);
+    }
   }
 
   /// @notice Selects a random winner.
