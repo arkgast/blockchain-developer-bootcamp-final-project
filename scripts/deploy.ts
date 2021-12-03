@@ -36,7 +36,7 @@ async function updateContractAddress(address: string) {
   const filePath = resolve(FRONTED_SRC_PATH, "shared", "constants.ts");
   const fileContent = await readFrontendConstantsFile(filePath);
 
-  fileContent[1] = `const CONTRACT_ADDRESS="${address};"`;
+  fileContent[1] = `const CONTRACT_ADDRESS="${address}";`;
   await writeFileAsync(filePath, fileContent.join("\n"));
 
   await writeFileAsync("deployed_address.txt", address);
