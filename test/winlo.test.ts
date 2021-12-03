@@ -1,83 +1,134 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Winlo, Winlo__factory } from "../typechain";
+/* eslint-disable camelcase */
+import {
+  LinkToken,
+  LinkToken__factory,
+  VRFCoordinatorMock,
+  VRFCoordinatorMock__factory,
+  Winlo,
+  Winlo__factory,
+} from "../typechain"; // eslint-disable-line
+
+const transferLink = async (
+  linkTokenInstance: LinkToken,
+  winloContractAddress: string
+) => {
+  // Fund contract with link
+  return linkTokenInstance.transfer(
+    winloContractAddress,
+    "1000000000000000000"
+  );
+};
 
 describe("Winlo", function () {
-  let Contract: Winlo__factory;
-  let contractInstance: Winlo;
+  let Winlo: Winlo__factory;
+  let winloInstance: Winlo;
+
+  let LinkToken: LinkToken__factory;
+  let linkTokenInstance: LinkToken;
+
+  let VRFCoordinator: VRFCoordinatorMock__factory;
+  let vRFCoordinator: VRFCoordinatorMock;
+  /* eslint-enable camelcase */
+
   let owner: SignerWithAddress;
-  let addr1: SignerWithAddress;
+  let player1: SignerWithAddress;
+  let player2: SignerWithAddress;
 
   const FIXED_TICKET_COST = ethers.utils.parseEther("0.001");
 
   beforeEach(async () => {
-    Contract = await ethers.getContractFactory("Winlo");
-    contractInstance = await Contract.deploy();
-    await contractInstance.deployed();
+    LinkToken = await ethers.getContractFactory("LinkToken");
+    linkTokenInstance = await LinkToken.deploy();
+    await linkTokenInstance.deployed();
 
-    [owner, addr1] = await ethers.getSigners();
+    VRFCoordinator = await ethers.getContractFactory("VRFCoordinatorMock");
+    vRFCoordinator = await VRFCoordinator.deploy(linkTokenInstance.address);
+    await vRFCoordinator.deployed();
+
+    Winlo = await ethers.getContractFactory("Winlo");
+    winloInstance = await Winlo.deploy(
+      vRFCoordinator.address,
+      linkTokenInstance.address,
+      "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311"
+    );
+    await winloInstance.deployed();
+
+    [owner, player1, player2] = await ethers.getSigners();
   });
 
   it("should buy a ticket", async () => {
     await expect(
-      contractInstance.connect(owner).buyTicket({ value: FIXED_TICKET_COST })
+      winloInstance.connect(owner).buyTicket({ value: FIXED_TICKET_COST })
     )
-      .to.emit(contractInstance, "NewPlayer")
+      .to.emit(winloInstance, "NewPlayer")
       .withArgs(owner.address);
 
-    const players = await contractInstance.getPlayers();
+    const players = await winloInstance.getPlayers();
     expect(players).to.contain(owner.address);
   });
 
   it("should revert if not enough eth is sent", async () => {
     const lowerEntryFee = ethers.utils.parseEther("0.0001");
     await expect(
-      contractInstance.connect(owner).buyTicket({ value: lowerEntryFee })
+      winloInstance.connect(owner).buyTicket({ value: lowerEntryFee })
     ).to.be.reverted;
   });
 
   it("should return exeeded eth", async () => {
     const higherEntryFee = ethers.utils.parseEther("0.1");
     await expect(
-      contractInstance.connect(addr1).buyTicket({ value: higherEntryFee })
+      winloInstance.connect(player1).buyTicket({ value: higherEntryFee })
     )
-      .to.emit(contractInstance, "Refund")
-      .withArgs(addr1.address, higherEntryFee.sub(FIXED_TICKET_COST));
+      .to.emit(winloInstance, "Refund")
+      .withArgs(player1.address, higherEntryFee.sub(FIXED_TICKET_COST));
   });
 
   it("should select a winner", async () => {
-    await contractInstance
-      .connect(addr1)
+    // Fund contract with link
+    await transferLink(linkTokenInstance, winloInstance.address);
+
+    // Buy tickets
+    await winloInstance
+      .connect(player1)
+      .buyTicket({ value: FIXED_TICKET_COST });
+    await winloInstance
+      .connect(player2)
       .buyTicket({ value: FIXED_TICKET_COST });
 
-    await expect(contractInstance.connect(owner).selectWinner())
-      .to.emit(contractInstance, "Winner")
-      .withArgs(addr1.address, FIXED_TICKET_COST);
+    // Select winner
+    const tx = await winloInstance.connect(owner).selectWinner();
+    const receipt = await tx.wait();
+    const reqId = receipt.events![0].topics[0];
 
-    const winners = await contractInstance.getWinners();
-    expect(winners).to.contain(addr1.address);
+    // Mock VRFCoordinator
+    await vRFCoordinator.callBackWithRandomness(
+      reqId,
+      1, // select player2 as winner
+      winloInstance.address
+    );
 
-    const players = await contractInstance.getPlayers();
+    const lastWinner = await winloInstance.lastWinner();
+    const players = await winloInstance.getPlayers();
+    const winners = await winloInstance.getWinners();
+
+    expect(lastWinner).to.equal(player2.address);
+    expect(winners).to.contain(player2.address);
+    expect(winners.length).to.equal(1);
     expect(players.length).to.equal(0);
   });
 
   it("should allow to select winner only by owner", async () => {
-    await contractInstance
-      .connect(addr1)
+    // Fund contract with link
+    await transferLink(linkTokenInstance, winloInstance.address);
+
+    await winloInstance
+      .connect(player1)
       .buyTicket({ value: FIXED_TICKET_COST });
 
-    await expect(contractInstance.connect(addr1).selectWinner()).to.be.reverted;
-    await contractInstance.connect(owner).selectWinner();
-  });
-
-  it("should display last winner", async () => {
-    await contractInstance
-      .connect(addr1)
-      .buyTicket({ value: FIXED_TICKET_COST });
-    await contractInstance.connect(owner).selectWinner();
-
-    const lastWinner = await contractInstance.lastWinner();
-    expect(lastWinner).to.equal(addr1.address);
+    await expect(winloInstance.connect(player1).selectWinner()).to.be.reverted;
+    await winloInstance.connect(owner).selectWinner();
   });
 });
