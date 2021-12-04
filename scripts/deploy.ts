@@ -31,6 +31,7 @@ async function copypAbiFile() {
   const srcPath = resolve(CONTRACTS_PATH, "Winlo.sol", "Winlo.json");
   const tgtPath = resolve(FRONTED_SRC_PATH, "utils", "Winlo.json");
   await copyFileAsync(srcPath, tgtPath);
+  console.log("Winlo.json copied to %s", tgtPath);
 }
 
 async function updateContractAddress(address: string) {
@@ -39,6 +40,7 @@ async function updateContractAddress(address: string) {
 
   fileContent[1] = `const CONTRACT_ADDRESS="${address}";`;
   await writeFileAsync(filePath, fileContent.join("\n"));
+  console.log("CONTRACT_ADDRESS constant changed on file %s", filePath);
 
   await writeFileAsync("deployed_address.txt", address);
 }

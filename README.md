@@ -4,6 +4,16 @@ DApp created for users to play lottery.
 
 ## How to use
 
+This project uses advance hardhat template and it was tested with node v14.x and v16.x
+
+### Environment variables
+
+Environment variables needed are in the next file `.env.example`.
+
+Execute the next command and set the proper values on `.env` file.
+
+    $ cp .env.example .env
+
 ### Install dependencies
 
     $ npm install
@@ -20,9 +30,13 @@ DApp created for users to play lottery.
 
     $ npm run test:e2e
 
-> To run this tests successfully you need to have LINK
+> To run this tests successfully you need to have some LINK.
 
-## Metamask address `0xe24376969016f0C32792e12413b824C2a0BC2dfe`
+### Deploy
+
+    $ npm run deploy
+
+## Ethereum address `0xe24376969016f0C32792e12413b824C2a0BC2dfe`
 
 ## Url of deployed site
 
@@ -51,9 +65,9 @@ https://drive.google.com/file/d/1khHWJdOfOROZXQuELpMZwBkMBbzm4iWu/view?usp=shari
 │     │   └── tsconfig.json                        Typescript configuration for fronted project.              │
 ├     │                                                                                                       │ 
 │     ├── contracts                                Lottery contracts.                                         │
+│     │   ├── test                                 Mock contracts used for testing.                           │
 │     │   ├── CircuitBreaker.sol                   Implementation of circuit breaker pattern.                 │
 │     │   ├── Ownable.sol                          Implementation of ownable pattern.                         │
-│     │   ├── RandomNumberConsumer.sol             Implementation of random number consumer.                  │
 │     │   └── Winlo.sol                            Main contract.                                             │
 │     ├── scripts                                  Scripts used to automate tasks.                            │
 │     │   └── deploy.ts                            Deploy contracts.                                          │
@@ -71,35 +85,6 @@ https://drive.google.com/file/d/1khHWJdOfOROZXQuELpMZwBkMBbzm4iWu/view?usp=shari
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────+
 ```
 
-# To do list
+> Tasks are in are set on [github projects][1] 
 
-- [x] Initial design of the project
-- [ ] General improvements and refactor
-- [ ] Improve design and to do list
-
-### Contract
-
-- [x] Create tests
-- [x] Apply circuit breaker pattern
-- [x] Apply ownable design pattern 
-- [x] Allow users to buy a ticket
-- [x] Emmit event when a ticket is bought
-- [x] Select random winner
-- [x] Emit event when a winner is selected
-- [x] Return list of all participants
-- [x] Return list of all winners
-- [ ] Improve security with Open Zeppelin Contracts
-- [ ] Improve security with Open Zeppelin Contracts
-
-### Frontend
-
-- [x] Connect wallet
-- [x] Use active wallet
-- [x] Buy lottery ticket
-- [x] Receive notification when lottery event completes
-- [x] Show lottery winner
-- [x] List users who bought a ticket
-- [x] List previous winers
-
-### Utils
-- [ ] Create script to save contract abi and address into the proper files once it is deployed
+[1]: https://github.com/arkgast/blockchain-developer-bootcamp-final-project/projects/1
