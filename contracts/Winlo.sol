@@ -12,7 +12,7 @@ import "./Ownable.sol";
 contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
   /// @notice Entry fee cost.
   /// @dev Fixed value, it could be ideal to make this dynamic.
-  uint256 private FEE_COST = 0.001 ether;
+  uint256 public ticketPrice = 0.001 ether;
 
   // @notice List of current players.
   // @dev List of player addresses.
@@ -54,7 +54,7 @@ contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
   }
 
   modifier costToEnter() {
-    require(msg.value >= FEE_COST, "You should sent 0.001 eth");
+    require(msg.value >= ticketPrice, "You should sent 0.001 eth");
     _;
   }
 
@@ -68,8 +68,8 @@ contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
 
   /// @notice Refund user in case it sends more than it was required.
   function refund() private {
-    if (msg.value > FEE_COST) {
-      uint256 amountToRefund = msg.value - FEE_COST;
+    if (msg.value > ticketPrice) {
+      uint256 amountToRefund = msg.value - ticketPrice;
       (bool success, ) = payable(msg.sender).call{ value: amountToRefund }("");
 
       require(success, "Refund failed");
@@ -96,6 +96,10 @@ contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
     (bool success, ) = payable(winner).call{ value: prize }("");
     require(success, "Adwarding failed");
     emit Winner(winner, prize);
+  }
+  
+  function changeTicketPrice(uint256 _ticketPrice) external onlyOwner whenPaused {
+    ticketPrice = _ticketPrice;
   }
 
   /// @notice Get list of current players.
