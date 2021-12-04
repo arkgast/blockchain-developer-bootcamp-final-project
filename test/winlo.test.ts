@@ -57,7 +57,9 @@ describe("Winlo", function () {
     [owner, player1, player2] = await ethers.getSigners();
   });
 
-  it("should buy a ticket", async () => {
+  it("should buy a ticket if state is UNPAUSED", async () => {
+    await winloInstance.unpause();
+
     await expect(
       winloInstance.connect(owner).buyTicket({ value: FIXED_TICKET_COST })
     )
@@ -66,6 +68,34 @@ describe("Winlo", function () {
 
     const players = await winloInstance.getPlayers();
     expect(players).to.contain(owner.address);
+  });
+
+  it("should not buy a ticket if contract is PAUSED", async () => {
+    await winloInstance.pause();
+
+    await expect(
+      winloInstance.buyTicket({ value: FIXED_TICKET_COST })
+    ).to.be.revertedWith("Not allowed");
+  });
+
+  it("should change ticketPrice when contract is PAUSED", async () => {
+    // pause contract and change ticket price
+    await winloInstance.pause();
+    const newTicketPrice = ethers.utils.parseEther("0.1");
+    await winloInstance.changeTicketPrice(newTicketPrice);
+
+    // unpause contract
+    await winloInstance.unpause();
+
+    // Buying a ticket should be reverted cause of the new price
+    await expect(
+      winloInstance.connect(player1).buyTicket({ value: FIXED_TICKET_COST })
+    ).to.be.reverted;
+
+    // Buying a ticket should succeed if correct amount of eth is sent
+    await winloInstance.connect(player1).buyTicket({ value: newTicketPrice });
+    const players = await winloInstance.getPlayers();
+    expect(players).to.contain(player1.address);
   });
 
   it("should revert if not enough eth is sent", async () => {
