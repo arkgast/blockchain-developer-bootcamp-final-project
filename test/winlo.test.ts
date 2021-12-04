@@ -12,6 +12,7 @@ import {
 } from "../typechain"; // eslint-disable-line
 
 const { KEY_HASH } = process.env;
+const FIXED_TICKET_COST = ethers.utils.parseEther("0.001");
 
 const transferLink = async (
   linkTokenInstance: LinkToken,
@@ -35,8 +36,6 @@ describe("Winlo", function () {
   let owner: SignerWithAddress;
   let player1: SignerWithAddress;
   let player2: SignerWithAddress;
-
-  const FIXED_TICKET_COST = ethers.utils.parseEther("0.001");
 
   beforeEach(async () => {
     LinkToken = await ethers.getContractFactory("LinkToken");
