@@ -1,8 +1,3 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
 import { resolve } from "path";
 import { copyFile, writeFile, readFile } from "fs";
@@ -15,9 +10,15 @@ const readFileAsync = promisify(readFile);
 const FRONTED_SRC_PATH = resolve("frontend", "src");
 const CONTRACTS_PATH = resolve("artifacts", "contracts");
 
+const { VRF_CONSUMER_ADDRESS, LINK_TOKEN_ADDRESS, KEY_HASH } = process.env;
+
 async function main() {
   const Winlo = await ethers.getContractFactory("Winlo");
-  const winlo = await Winlo.deploy();
+  const winlo = await Winlo.deploy(
+    VRF_CONSUMER_ADDRESS || "",
+    LINK_TOKEN_ADDRESS || "",
+    KEY_HASH || ""
+  );
   await winlo.deployed();
 
   console.log("Winlo deployed to:", winlo.address);

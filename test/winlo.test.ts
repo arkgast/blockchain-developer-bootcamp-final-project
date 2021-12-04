@@ -11,15 +11,14 @@ import {
   Winlo__factory,
 } from "../typechain"; // eslint-disable-line
 
+const { KEY_HASH } = process.env;
+
 const transferLink = async (
   linkTokenInstance: LinkToken,
   winloContractAddress: string
 ) => {
-  // Fund contract with link
-  return linkTokenInstance.transfer(
-    winloContractAddress,
-    "1000000000000000000"
-  );
+  const amount = "1000000000000000000"; // 1 Link
+  return linkTokenInstance.transfer(winloContractAddress, amount);
 };
 
 describe("Winlo", function () {
@@ -52,7 +51,7 @@ describe("Winlo", function () {
     winloInstance = await Winlo.deploy(
       vRFCoordinator.address,
       linkTokenInstance.address,
-      "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311"
+      KEY_HASH || ""
     );
     await winloInstance.deployed();
 
