@@ -13,6 +13,10 @@ import {
 
 const { KEY_HASH } = process.env;
 const FIXED_TICKET_COST = ethers.utils.parseEther("0.001");
+const CIRCUIT_BREAKER_STATES = {
+  PAUSED: 0,
+  UNPAUSED: 1,
+};
 
 const transferLink = async (
   linkTokenInstance: LinkToken,
@@ -57,6 +61,19 @@ describe("Winlo", function () {
     [owner, player1, player2] = await ethers.getSigners();
   });
 
+  it("should initialize with correct states", async () => {
+    const { AddressZero } = ethers.constants;
+    expect(await winloInstance.owner()).to.equal(owner.address);
+    expect((await winloInstance.getPlayers()).length).to.equal(0);
+    expect((await winloInstance.getWinners()).length).to.equal(0);
+    expect(await winloInstance.lastWinner()).to.equal(AddressZero);
+    expect((await winloInstance.randomResult()).toString()).to.equal("0");
+    expect(await winloInstance.ticketPrice()).to.equal(FIXED_TICKET_COST);
+    expect(await winloInstance.state()).to.equal(
+      CIRCUIT_BREAKER_STATES.UNPAUSED
+    );
+  });
+
   it("should buy a ticket if state is UNPAUSED", async () => {
     await winloInstance.unpause();
 
@@ -78,34 +95,14 @@ describe("Winlo", function () {
     ).to.be.revertedWith("Not allowed");
   });
 
-  it("should change ticketPrice when contract is PAUSED", async () => {
-    // pause contract and change ticket price
-    await winloInstance.pause();
-    const newTicketPrice = ethers.utils.parseEther("0.1");
-    await winloInstance.changeTicketPrice(newTicketPrice);
-
-    // unpause contract
-    await winloInstance.unpause();
-
-    // Buying a ticket should be reverted cause of the new price
-    await expect(
-      winloInstance.connect(player1).buyTicket({ value: FIXED_TICKET_COST })
-    ).to.be.reverted;
-
-    // Buying a ticket should succeed if correct amount of eth is sent
-    await winloInstance.connect(player1).buyTicket({ value: newTicketPrice });
-    const players = await winloInstance.getPlayers();
-    expect(players).to.contain(player1.address);
-  });
-
-  it("should revert if not enough eth is sent", async () => {
+  it("should not buy a ticket when eth sent is not enough", async () => {
     const lowerEntryFee = ethers.utils.parseEther("0.0001");
     await expect(
       winloInstance.connect(owner).buyTicket({ value: lowerEntryFee })
     ).to.be.reverted;
   });
 
-  it("should return exeeded eth", async () => {
+  it("should return exeeded eth when buying ticket", async () => {
     const higherEntryFee = ethers.utils.parseEther("0.1");
     await expect(
       winloInstance.connect(player1).buyTicket({ value: higherEntryFee })
@@ -114,7 +111,20 @@ describe("Winlo", function () {
       .withArgs(player1.address, higherEntryFee.sub(FIXED_TICKET_COST));
   });
 
-  it("should select a winner", async () => {
+  it("should change ticketPrice when contract is PAUSED", async () => {
+    await winloInstance.pause();
+    const newTicketPrice = ethers.utils.parseEther("0.1");
+    await winloInstance.changeTicketPrice(newTicketPrice);
+  });
+
+  it("should not change ticketPrice when contract is UNPAUSED", async () => {
+    await winloInstance.unpause();
+    const newTicketPrice = ethers.utils.parseEther("0.1");
+    await expect(winloInstance.changeTicketPrice(newTicketPrice)).to.be
+      .reverted;
+  });
+
+  it("should select a winner when there is enough LINK", async () => {
     // Fund contract with link
     await transferLink(linkTokenInstance, winloInstance.address);
 
@@ -146,6 +156,18 @@ describe("Winlo", function () {
     expect(winners).to.contain(player2.address);
     expect(winners.length).to.equal(1);
     expect(players.length).to.equal(0);
+  });
+
+  it("should not select a winner when there is not enough LINK", async () => {
+    // Selecting winner without funding contract with link
+    await winloInstance
+      .connect(player1)
+      .buyTicket({ value: FIXED_TICKET_COST });
+
+    // Select winner
+    await expect(
+      winloInstance.connect(owner).selectWinner()
+    ).to.be.revertedWith("Not enough LINK");
   });
 
   it("should allow to select winner only by owner", async () => {

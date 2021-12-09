@@ -97,7 +97,8 @@ contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
     require(success, "Adwarding failed");
     emit Winner(winner, prize);
   }
-  
+
+  /// @notice Change ticket price
   function changeTicketPrice(uint256 _ticketPrice) external onlyOwner whenPaused {
     ticketPrice = _ticketPrice;
   }

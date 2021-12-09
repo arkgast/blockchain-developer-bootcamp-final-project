@@ -4,7 +4,7 @@ DApp created for users to play lottery.
 
 ## How to use
 
-This project uses advance hardhat template and it was tested with node v14.x and v16.x
+This project uses advance hardhat template and it was tested with node >= v14
 
 ### Environment variables
 
@@ -25,6 +25,10 @@ Execute the next command and set the proper values on `.env` file.
 ### Run unit tests
 
     $ npm test
+
+### Run test coverage
+
+    $ npm run test:coverage
 
 ### Run integration tests
 
