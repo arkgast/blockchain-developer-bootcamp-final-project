@@ -13,10 +13,6 @@ import {
 
 const { KEY_HASH } = process.env;
 const FIXED_TICKET_COST = ethers.utils.parseEther("0.001");
-const CIRCUIT_BREAKER_STATES = {
-  PAUSED: 0,
-  UNPAUSED: 1,
-};
 
 const transferLink = async (
   linkTokenInstance: LinkToken,
@@ -69,14 +65,10 @@ describe("Winlo", function () {
     expect(await winloInstance.lastWinner()).to.equal(AddressZero);
     expect((await winloInstance.randomResult()).toString()).to.equal("0");
     expect(await winloInstance.ticketPrice()).to.equal(FIXED_TICKET_COST);
-    expect(await winloInstance.state()).to.equal(
-      CIRCUIT_BREAKER_STATES.UNPAUSED
-    );
+    expect(await winloInstance.paused()).to.equal(false);
   });
 
-  it("should buy a ticket if state is UNPAUSED", async () => {
-    await winloInstance.unpause();
-
+  it("should buy a ticket contract is UNPAUSED", async () => {
     await expect(
       winloInstance.connect(owner).buyTicket({ value: FIXED_TICKET_COST })
     )
@@ -88,11 +80,15 @@ describe("Winlo", function () {
   });
 
   it("should not buy a ticket if contract is PAUSED", async () => {
+    // Reverts when contract is PAUSED
     await winloInstance.pause();
-
     await expect(
       winloInstance.buyTicket({ value: FIXED_TICKET_COST })
-    ).to.be.revertedWith("Not allowed");
+    ).to.be.revertedWith("Pausable: paused");
+
+    // Completes when contract is UNPAUSED
+    await winloInstance.unpause();
+    await winloInstance.buyTicket({ value: FIXED_TICKET_COST });
   });
 
   it("should not buy a ticket when eth sent is not enough", async () => {
@@ -118,10 +114,10 @@ describe("Winlo", function () {
   });
 
   it("should not change ticketPrice when contract is UNPAUSED", async () => {
-    await winloInstance.unpause();
     const newTicketPrice = ethers.utils.parseEther("0.1");
-    await expect(winloInstance.changeTicketPrice(newTicketPrice)).to.be
-      .reverted;
+    await expect(
+      winloInstance.changeTicketPrice(newTicketPrice)
+    ).to.be.revertedWith("Pausable: not paused");
   });
 
   it("should select a winner when there is enough LINK", async () => {
@@ -180,5 +176,17 @@ describe("Winlo", function () {
 
     await expect(winloInstance.connect(player1).selectWinner()).to.be.reverted;
     await winloInstance.connect(owner).selectWinner();
+  });
+
+  it("should allow to pause/unpause contract only if caller is owner", async () => {
+    await expect(winloInstance.connect(player1).pause()).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
+    await winloInstance.connect(owner).pause();
+
+    await expect(winloInstance.connect(player1).unpause()).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
+    await winloInstance.connect(owner).unpause();
   });
 });

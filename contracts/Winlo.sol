@@ -2,14 +2,14 @@
 pragma solidity 0.8.9;
 
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "hardhat/console.sol";
-import "./CircuitBreaker.sol";
-import "./Ownable.sol";
 
 /// @title A lottery game.
 /// @notice Main contract that contains functions used by fronted application.
 /// @dev Implementation is basic can be improved with already tested libraries.
-contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
+contract Winlo is Ownable, Pausable, VRFConsumerBase {
   /// @notice Entry fee cost.
   /// @dev Fixed value, it could be ideal to make this dynamic.
   uint256 public ticketPrice = 0.001 ether;
@@ -113,5 +113,15 @@ contract Winlo is Ownable, CircuitBreaker, VRFConsumerBase {
   /// @return list of winners.
   function getWinners() external view returns (address[] memory) {
     return winners;
+  }
+
+  /// @notice Pause contract
+  function pause() external onlyOwner {
+    _pause();
+  }
+
+  /// @notice Unpause contract
+  function unpause() external onlyOwner {
+    _unpause();
   }
 }
