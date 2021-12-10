@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
 
-import "@chainlink/token/contracts/v0.6/LinkToken.sol";
+/**
+* @dev compiler version needs to be 0.4.24 instead of 0.6.
+* to avoid having issues with openzzepelin contracts.
+*/
+pragma solidity 0.4.24;
+
+import "@chainlink/token/contracts/v0.4/LinkToken.sol";
