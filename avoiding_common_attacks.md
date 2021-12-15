@@ -43,9 +43,11 @@ Some recommendations might not be checked due to lack of knowledge at this point
 
 ## SWC-107 - Reentrancy Attack
 
-- [ ] Make sure all internal state changes are performed before the call is executed. This is known as the Checks-Effects-Interactions pattern.
+- [x] Make sure all internal state changes are performed before the call is executed. This is known as the Checks-Effects-Interactions pattern.
 
-- [ ] Use a reentrancy lock (ie. OpenZeppelin's ReentrancyGuard.
+- [x] Use a reentrancy lock (ie. OpenZeppelin's ReentrancyGuard.
+
+Reentrancy attack is prevented by using internal states.
 
 ## SWC-108 - State Variable Default Visibility
 
@@ -124,7 +126,7 @@ The best fix for the ERC20 race condition is to add a field to the inputs of app
 
 ## SWC-120 - Weak Sources of Randomness from Chain Attributes
 
-- [ ] Using external sources of randomness via oracles, e.g. Oraclize. Note that this approach requires trusting in oracle, thus it may be reasonable to use multiple oracles.
+- [x] Using external sources of randomness via oracles, e.g. Oraclize. Note that this approach requires trusting in oracle, thus it may be reasonable to use multiple oracles.
 
 > VRF is being used to generate random numbers.
 
