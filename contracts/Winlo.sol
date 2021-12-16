@@ -79,7 +79,7 @@ contract Winlo is Ownable, Pausable, VRFConsumerBase {
   }
 
   /// @notice Selects a random winner.
-  function selectWinner() external onlyOwner whenNotPaused returns (bytes32){
+  function selectWinner() external onlyOwner whenNotPaused returns (bytes32) {
     require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
 
     _pause();
@@ -87,7 +87,7 @@ contract Winlo is Ownable, Pausable, VRFConsumerBase {
     return requestRandomness(keyHash, fee);
   }
 
-  function fulfillRandomness(bytes32 _requestId, uint256 _randomness) internal override whenPaused {
+  function fulfillRandomness(bytes32, uint256 _randomness) internal override whenPaused {
     randomResult = _randomness % players.length;
     address winner = players[randomResult];
     lastWinner = winner;
